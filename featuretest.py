@@ -10,20 +10,47 @@ import os
 
 # Constants
 HALLWAYDIR = "data/hallway"
-PERSONSDIR = "procam-reid/persons_detected"
+PERSONSDIR = "data/feature_testing"
 
 # Model
 yolo = models.resnet18(pretrained=True)
 
 # Persons
-person_1 = Image.open(os.path.join(PERSONSDIR,"person_0_143.png"))
-person_2 = Image.open(os.path.join(PERSONSDIR,"person_0.png"))
+person_1_1 = Image.open(os.path.join(PERSONSDIR,"person_1_1.png"))
+person_1_2 = Image.open(os.path.join(PERSONSDIR,"person_1_2.png"))
+person_2_1 = Image.open(os.path.join(PERSONSDIR,"person_2_1.png"))
+person_2_2 = Image.open(os.path.join(PERSONSDIR,"person_2_2.png"))
+person_3_1 = Image.open(os.path.join(PERSONSDIR,"person_3_1.png"))
+person_3_2 = Image.open(os.path.join(PERSONSDIR,"person_3_2.png"))
+person_4_1 = Image.open(os.path.join(PERSONSDIR,"person_4_1.png"))
+person_4_2 = Image.open(os.path.join(PERSONSDIR,"person_4_2.png"))
+person_5_1 = Image.open(os.path.join(PERSONSDIR,"person_5_1.png"))
+person_5_2 = Image.open(os.path.join(PERSONSDIR,"person_5_2.png"))
+person_6_1 = Image.open(os.path.join(PERSONSDIR,"person_6_1.png"))
+person_6_2 = Image.open(os.path.join(PERSONSDIR,"person_6_2.png"))
+person_7_1 = Image.open(os.path.join(PERSONSDIR,"person_7_1.png"))
+person_7_2 = Image.open(os.path.join(PERSONSDIR,"person_7_2.png"))
+person_8_1 = Image.open(os.path.join(PERSONSDIR,"person_8_1.png"))
+person_8_2 = Image.open(os.path.join(PERSONSDIR,"person_8_2.png"))
+person_9_1 = Image.open(os.path.join(PERSONSDIR,"person_9_1.png"))
+person_9_2 = Image.open(os.path.join(PERSONSDIR,"person_9_2.png"))
+person_10_1 = Image.open(os.path.join(PERSONSDIR,"person_10_1.png"))
+person_10_2 = Image.open(os.path.join(PERSONSDIR,"person_10_2.png"))
+
+# Hard examples
+person_1_hard = Image.open(os.path.join(PERSONSDIR,"person_1_hard.png"))
+person_2_hard = Image.open(os.path.join(PERSONSDIR,"person_2_hard.png"))
+person_3_hard = Image.open(os.path.join(PERSONSDIR,"person_3_hard.png"))
+person_4_hard = Image.open(os.path.join(PERSONSDIR,"person_4_hard.png"))
+person_5_hard = Image.open(os.path.join(PERSONSDIR,"person_5_hard.png"))
 
 # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
 # Load the pretrained model
 model = models.resnet18(pretrained=True)
+model = torch.load("models/resnet_hallway_639_1_10.tar")
+
 # Use the model object to select the desired layer
-print(model._modules)
+#print(model._modules)
 layer = model._modules.get('avgpool')
 # Set model to evaluation mode
 model.eval()
@@ -53,19 +80,50 @@ def get_vector(img):
     # 7. Return the feature vector
     return my_embedding
 
-embedding_1 = get_vector(person_1).flatten().numpy()
-embedding_2 = get_vector(person_2).flatten().numpy()
-lower_limit = 1e-6
-norm_product = max(np.linalg.norm(embedding_1)*np.linalg.norm(embedding_2),lower_limit)
+def get_cosine_sim(v1,v2):
+    lower_limit = 1e-6
+    norm_product = max(np.linalg.norm(v1)*np.linalg.norm(v2),lower_limit)
+    cosinesim = np.dot(v1,v2)/norm_product
+    return  cosinesim
 
-cosinesim = np.dot(embedding_1,embedding_2)/norm_product
+# Get embeddings for all person images
+embedding_1_1 = get_vector(person_1_1).flatten().numpy()
+embedding_1_2 = get_vector(person_1_2).flatten().numpy()
+embedding_2_1 = get_vector(person_2_1).flatten().numpy()
+embedding_2_2 = get_vector(person_2_2).flatten().numpy()
+embedding_3_1 = get_vector(person_3_1).flatten().numpy()
+embedding_3_2 = get_vector(person_3_2).flatten().numpy()
+embedding_4_1 = get_vector(person_4_1).flatten().numpy()
+embedding_4_2 = get_vector(person_4_2).flatten().numpy()
+embedding_5_1 = get_vector(person_5_1).flatten().numpy()
+embedding_5_2 = get_vector(person_5_2).flatten().numpy()
+embedding_6_1 = get_vector(person_6_1).flatten().numpy()
+embedding_6_2 = get_vector(person_6_2).flatten().numpy()
+embedding_7_1 = get_vector(person_7_1).flatten().numpy()
+embedding_7_2 = get_vector(person_7_2).flatten().numpy()
+embedding_8_1 = get_vector(person_8_1).flatten().numpy()
+embedding_8_2 = get_vector(person_8_2).flatten().numpy()
+embedding_9_1 = get_vector(person_9_1).flatten().numpy()
+embedding_9_2 = get_vector(person_9_2).flatten().numpy()
+embedding_10_1 = get_vector(person_10_1).flatten().numpy()
+embedding_10_2 = get_vector(person_10_2).flatten().numpy()
 
-print(cosinesim)
-if 0:
-    # Using PyTorch Cosine Similarity
-    cos = nn.CosineSimilarity(dim=1, eps=1e-6)
-    cos_sim = cos(embedding_1,
-                embedding_2)
-    print('\nCosine similarity: {0}\n'.format(cos_sim))
+embeddings = [embedding_1_1,embedding_1_2,embedding_2_1,embedding_2_2,embedding_3_1,embedding_3_2,
+              embedding_4_1,embedding_4_2,embedding_5_1,embedding_5_2,embedding_6_1,embedding_6_2,
+              embedding_7_1,embedding_7_2,embedding_8_1,embedding_8_2,embedding_9_1,embedding_9_2,
+              embedding_10_1,embedding_10_2]
+#
+sim_matrix = np.zeros((20,20))
 
-    #print(embedding_1.flatten().shape)
+i = 0
+j = 1
+for emb_1 in embeddings:
+    rest = embeddings[j:]
+    col_idx = j
+    for emb_2 in rest:
+        sim_matrix[i,col_idx] = get_cosine_sim(emb_1,emb_2)
+        col_idx += 1
+    j += 1
+    i += 1
+
+print(sim_matrix)

@@ -44,7 +44,7 @@ optimizer = optim.Adam(resnet.parameters(), lr=learning_rate)
 
 if 1 :
     # Train network
-    for epoch in range(num_epochs):
+    for epoch in range(1,num_epochs+1):
         losses = []
         print("Epoch #{}".format(epoch))
         for batch_idx, (data, targets) in enumerate(train_loader):
@@ -63,6 +63,8 @@ if 1 :
 
             # Gradient decent
             optimizer.step()
+
+torch.save(resnet, "models/resnet_hallway_639_1_10.tar")
 
 
 def check_accuracy(loader, model):
