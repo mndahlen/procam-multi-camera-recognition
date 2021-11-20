@@ -7,6 +7,8 @@ import cv2
 from PIL import Image
 import numpy as np
 import os
+import seaborn as sbn
+import matplotlib.pyplot as plt
 
 # Constants
 HALLWAYDIR = "data/hallway"
@@ -47,7 +49,7 @@ person_5_hard = Image.open(os.path.join(PERSONSDIR,"person_5_hard.png"))
 # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
 # Load the pretrained model
 model = models.resnet18(pretrained=True)
-model = torch.load("models/resnet_hallway_639_1_10.tar")
+model = torch.load("models/resnet_hallway_639_3_20_wack_2.tar")
 
 # Use the model object to select the desired layer
 #print(model._modules)
@@ -127,3 +129,10 @@ for emb_1 in embeddings:
     i += 1
 
 print(sim_matrix)
+mask = sim_matrix.copy()
+mask[mask > 0] = 2
+mask[mask == 0] = 1
+mask[mask == 2] = 0
+
+ax = sbn.heatmap(sim_matrix,mask = mask, annot=True)
+plt.show()

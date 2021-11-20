@@ -15,8 +15,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 in_channel = 3
 num_classes = 7
 learning_rate = 1e-3
-batch_size = 10
-num_epochs = 1
+batch_size = 20
+num_epochs = 3
 
 # Load Data
 transform = transforms.Compose((
@@ -26,8 +26,8 @@ transform = transforms.Compose((
     transforms.ToTensor()))
 
 dataset = PersonDataset(
-    "data\hallway_persons_0\data_labels.csv", 
-    "data\hallway_persons_0\persons", 
+    "data\hallway_639\data_labels.csv", 
+    "data\hallway_639\persons", 
     transform=transform)
 train_set, test_set = torch.utils.data.random_split(dataset, [339,300],
                       generator=torch.Generator().manual_seed(42))
@@ -64,7 +64,7 @@ if 1 :
             # Gradient decent
             optimizer.step()
 
-torch.save(resnet, "models/resnet_hallway_639_1_10.tar")
+torch.save(resnet, "models/resnet_hallway_639_{}_{}.tar".format(num_epochs,batch_size))
 
 
 def check_accuracy(loader, model):
