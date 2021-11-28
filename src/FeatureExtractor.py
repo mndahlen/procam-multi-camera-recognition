@@ -8,7 +8,7 @@ device = torch.device("cpu")
 
 class FeatureExtractor(object):
     def __init__(self):
-        self.resnet = torch.load("../models/resnet18_hallway_1192_3_20.tar")
+        self.resnet = torch.load("../models/resnet18_hallway_1192_augmented_3_20.tar")
         self.layer = self.resnet._modules.get('avgpool')
         self.resnet.eval()
         self.scaler = transforms.Scale((224, 224))

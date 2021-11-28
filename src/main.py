@@ -54,7 +54,7 @@ for frame in range(num_frames):
     c3_bbox = get_bbox(c3_yolo_results)
     c4_bbox = get_bbox(c4_yolo_results)
 
-    c1_persons = feature_extractor.get_cam_persons_3(c1_bbox,c1,c1_persons,T_bbox=50,T_sim = 0.8)
+    c1_persons = feature_extractor.get_cam_persons_3(c1_bbox,c1,c1_persons,T_bbox=100,T_sim = 0.8)
     #c2_persons = feature_extractor.get_cam_persons(c2_bbox,c2,c2_persons,T)
     #c3_persons = feature_extractor.get_cam_persons(c3_bbox,c3,c3_persons,T)
     #c4_persons = feature_extractor.get_cam_persons(c4_bbox,c4,c4_persons,T)
@@ -63,7 +63,7 @@ for frame in range(num_frames):
     red = (0,0,255)
     green =  (0,255,0)
 
-    c1_w_bbox = draw_bbox_on_im(c1_bbox, c1, red, selected=True, selected_bbox=c1_persons[0]["bbox"])
+    c1_w_bbox = draw_bbox_on_im(c1_bbox, c1, red, selected=True, selected_bbox=c1_persons[1]["bbox"])
     c2_w_bbox = draw_bbox_on_im(c2_bbox, c2, red)
     c3_w_bbox = draw_bbox_on_im(c3_bbox, c3, red)
     c4_w_bbox = draw_bbox_on_im(c4_bbox, c4, red)

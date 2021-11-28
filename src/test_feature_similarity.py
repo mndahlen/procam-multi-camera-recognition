@@ -49,7 +49,7 @@ person_5_hard = Image.open(os.path.join(PERSONSDIR,"person_5_hard.png"))
 # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
 # Load the pretrained model
 model = models.resnet18(pretrained=True)
-model = torch.load("models/resnet18_hallway_1192_3_20.tar")
+model = torch.load("models/resnet18_hallway_1192_augmented_3_20.tar")
 
 # Use the model object to select the desired layer
 #print(model._modules)
