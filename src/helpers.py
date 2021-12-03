@@ -37,10 +37,10 @@ def draw_bbox_on_im(bbox, im, color, selected=False, selected_bbox=None):
 
     return im
 
-def draw_text_on_im(img, text, coord=(10,500)):
+def draw_text_on_im(img, text, coord=(10,500), color =(255,255,255)):
     font                   = cv2.FONT_HERSHEY_SIMPLEX
     fontScale              = 10
-    fontColor              = (255,255,255)
+    fontColor              = color
     thickness              = 10
     lineType               = 20
 

@@ -32,6 +32,7 @@ feature_extractor = FeatureExtractor("models/resnet18_hallway_1192_augmented_zer
 cam_instance = 0
 num_frames = 1000
 T = 0.9
+FEATURE_START_BUFFER = -1
 
 c1_persons = None
 c2_persons = None
@@ -63,16 +64,24 @@ for frame in range(num_frames):
     red = (0,0,255)
     green =  (0,255,0)
 
-    person_camera_idxs = feature_extractor.get_closest_persons(1, c1_persons, c2_persons, c3_persons, c4_persons)
-
+    if frame > FEATURE_START_BUFFER:
+        person_camera_idxs = feature_extractor.get_closest_persons(3, c1_persons, c2_persons, c3_persons, c4_persons)
+    else:
+        person_camera_idxs = [0,0,0,0]
+    
+    # Draw bounding boxes
     c1_w_bbox = draw_bbox_on_im(c1_bbox, c1, red, selected=True, selected_bbox=c1_persons[person_camera_idxs[0]]["bbox"])
     c2_w_bbox = draw_bbox_on_im(c2_bbox, c2, red, selected=True, selected_bbox=c2_persons[person_camera_idxs[1]]["bbox"])
     c3_w_bbox = draw_bbox_on_im(c3_bbox, c3, red, selected=True, selected_bbox=c3_persons[person_camera_idxs[2]]["bbox"])
     c4_w_bbox = draw_bbox_on_im(c4_bbox, c4, red, selected=True, selected_bbox=c4_persons[person_camera_idxs[3]]["bbox"])
+    # Add num persons counter
     c1_w_bbox = draw_text_on_im(c1_w_bbox, str(len(c1_persons)),(750,950))
     c2_w_bbox = draw_text_on_im(c2_w_bbox, str(len(c2_persons)),(750,950))
     c3_w_bbox = draw_text_on_im(c3_w_bbox, str(len(c3_persons)),(750,950))
     c4_w_bbox = draw_text_on_im(c4_w_bbox, str(len(c4_persons)),(750,950))
+    # Draw frame num
+    c1_w_bbox = draw_text_on_im(c1_w_bbox, str(frame),(250,950), color =(0,255,0))
+    # Merge four views to one display
     merged_im = merge_4_im(c1_w_bbox,c2_w_bbox,c3_w_bbox,c4_w_bbox)
 
     cv2.imshow("test",merged_im)
