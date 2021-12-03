@@ -208,3 +208,35 @@ class FeatureExtractor(object):
         pad_height = delta_height // 2
         padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
         return ImageOps.expand(img, padding)
+
+    def get_closest_persons(self, main_idx, main, sub_1, sub_2, sub_3):
+        main_feature = main[main_idx]["feature"]
+
+        closest_sub_1_val = 0
+        closest_sub_1_idx = 0
+        for idx in sub_1:
+            sub_feature= sub_1[idx]["feature"]
+            sim = self.get_cosine_sim(sub_feature,main_feature)
+            if sim > closest_sub_1_val:
+                closest_sub_1_val = sim
+                closest_sub_1_idx = idx
+
+        closest_sub_2_val = 0
+        closest_sub_2_idx = 0
+        for idx in sub_2:
+            sub_feature= sub_2[idx]["feature"]
+            sim = self.get_cosine_sim(sub_feature,main_feature)
+            if sim > closest_sub_2_val:
+                closest_sub_2_val = sim
+                closest_sub_2_idx = idx
+
+        closest_sub_3_val = 0
+        closest_sub_3_idx = 0
+        for idx in sub_3:
+            sub_feature= sub_3[idx]["feature"]
+            sim = self.get_cosine_sim(sub_feature,main_feature)
+            if sim > closest_sub_3_val:
+                closest_sub_3_val = sim
+                closest_sub_3_idx = idx
+
+        return (main_idx,closest_sub_1_idx,closest_sub_2_idx,closest_sub_3_idx)
