@@ -18,6 +18,8 @@ learning_rate = 1e-3
 batch_size = 20
 num_epochs = 3
 
+
+
 # Load Data
 transform = transforms.Compose((
     transforms.Normalize(mean=(0.485, 0.456, 0.406),
@@ -26,8 +28,8 @@ transform = transforms.Compose((
     transforms.ToTensor()))
 
 dataset = PersonDataset(
-    "data\hallway_1192_augmented\data_labels_augmented.csv", 
-    "data\hallway_1192_augmented\persons", 
+    "data\hallway_1192_augmented_zero_padded\data_labels_augmented_zero_padded.csv", 
+    "data\hallway_1192_augmented_zero_padded\persons", 
     transform=transform)
 print(len(dataset))
 train_set, test_set = torch.utils.data.random_split(dataset, [3000,576],
@@ -65,7 +67,7 @@ if 1 :
             # Gradient decent
             optimizer.step()
 
-torch.save(resnet, "models/resnet18_hallway_1192_augmented_{}_{}.tar".format(num_epochs,batch_size))
+torch.save(resnet, "models/resnet18_hallway_1192_augmented_zero_padded_{}_{}.tar".format(num_epochs,batch_size))
 
 
 def check_accuracy(loader, model):

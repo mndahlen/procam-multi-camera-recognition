@@ -9,10 +9,12 @@ import numpy as np
 import os
 import seaborn as sbn
 import matplotlib.pyplot as plt
+from helpers import *
 
 # Constants
 HALLWAYDIR = "data/hallway"
 PERSONSDIR = "data/feature_testing"
+ZERO_PAD = True
 
 # Model
 yolo = models.resnet18(pretrained=True)
@@ -39,17 +41,32 @@ person_9_2 = Image.open(os.path.join(PERSONSDIR,"person_9_2.png"))
 person_10_1 = Image.open(os.path.join(PERSONSDIR,"person_10_1.png"))
 person_10_2 = Image.open(os.path.join(PERSONSDIR,"person_10_2.png"))
 
-# Hard examples
-person_1_hard = Image.open(os.path.join(PERSONSDIR,"person_1_hard.png"))
-person_2_hard = Image.open(os.path.join(PERSONSDIR,"person_2_hard.png"))
-person_3_hard = Image.open(os.path.join(PERSONSDIR,"person_3_hard.png"))
-person_4_hard = Image.open(os.path.join(PERSONSDIR,"person_4_hard.png"))
-person_5_hard = Image.open(os.path.join(PERSONSDIR,"person_5_hard.png"))
+if ZERO_PAD:
+    person_1_1 = resize_with_padding(person_1_1, (224,224))
+    person_1_2 = resize_with_padding(person_1_2, (224,224))
+    person_2_1 = resize_with_padding(person_2_1, (224,224))
+    person_2_2 = resize_with_padding(person_2_2, (224,224))
+    person_3_1 = resize_with_padding(person_3_1, (224,224))
+    person_3_2 = resize_with_padding(person_3_2, (224,224))
+    person_4_1 = resize_with_padding(person_4_1, (224,224))
+    person_4_2 = resize_with_padding(person_4_2, (224,224))
+    person_5_1 = resize_with_padding(person_5_1, (224,224))
+    person_5_2 = resize_with_padding(person_5_2, (224,224))
+    person_6_1 = resize_with_padding(person_6_1, (224,224))
+    person_6_2 = resize_with_padding(person_6_2, (224,224))
+    person_7_1 = resize_with_padding(person_7_1, (224,224))
+    person_7_2 = resize_with_padding(person_7_2, (224,224))
+    person_8_1 = resize_with_padding(person_8_1, (224,224))
+    person_8_2 = resize_with_padding(person_8_2, (224,224))
+    person_9_1 = resize_with_padding(person_9_1, (224,224))
+    person_9_2 = resize_with_padding(person_9_2, (224,224))
+    person_10_1 = resize_with_padding(person_10_1, (224,224))
+    person_10_2 = resize_with_padding(person_10_2, (224,224))
 
 # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
 # Load the pretrained model
 model = models.resnet18(pretrained=True)
-model = torch.load("models/resnet18_hallway_1192_augmented_3_20.tar")
+model = torch.load("models/resnet18_hallway_1192_augmented_zero_padded_3_20.tar")
 
 # Use the model object to select the desired layer
 #print(model._modules)

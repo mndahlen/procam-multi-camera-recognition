@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from PIL import Image, ImageOps
+
 def idx_to_string(idx):
     if idx < 10:
         idx_str = "00" + str(idx)
@@ -35,6 +37,22 @@ def draw_bbox_on_im(bbox, im, color, selected=False, selected_bbox=None):
 
     return im
 
+def draw_text_on_im(img, text, coord=(10,500)):
+    font                   = cv2.FONT_HERSHEY_SIMPLEX
+    fontScale              = 10
+    fontColor              = (255,255,255)
+    thickness              = 10
+    lineType               = 20
+
+    img = cv2.putText(img,text, 
+        coord, 
+        font, 
+        fontScale,
+        fontColor,
+        thickness,
+        lineType)
+    return img
+
 def merge_4_im(im1,im2,im3,im4):
     height = int(im1.shape[0]/4)
     width = int(im1.shape[1]/4)
@@ -47,3 +65,12 @@ def merge_4_im(im1,im2,im3,im4):
     im_1_2_3_4 = np.concatenate((im_1_2, im_3_4), axis=0)
     
     return im_1_2_3_4
+
+def resize_with_padding(img, expected_size):
+    img.thumbnail((expected_size[0], expected_size[1]))
+    delta_width = expected_size[0] - img.size[0]
+    delta_height = expected_size[1] - img.size[1]
+    pad_width = delta_width // 2
+    pad_height = delta_height // 2
+    padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
+    return ImageOps.expand(img, padding)

@@ -6,7 +6,7 @@ from helpers import *
 from FeatureExtractor import FeatureExtractor
 device = torch.device("cpu")
 
-IMGDIR = "../data/hallway"
+IMGDIR = "data/hallway"
 
 def update_cam_persons(bbox,im,persons,T):
     if not persons:
@@ -27,7 +27,7 @@ def update_cam_persons(bbox,im,persons,T):
 
 # models
 yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-feature_extractor = FeatureExtractor()
+feature_extractor = FeatureExtractor("models/resnet18_hallway_1192_augmented_zero_padded_3_20.tar",zero_pad=True)
 
 cam_instance = 0
 num_frames = 1000
@@ -54,10 +54,10 @@ for frame in range(num_frames):
     c3_bbox = get_bbox(c3_yolo_results)
     c4_bbox = get_bbox(c4_yolo_results)
 
-    c1_persons = feature_extractor.get_cam_persons_3(c1_bbox,c1,c1_persons,T_bbox=100,T_sim = 0.8)
-    #c2_persons = feature_extractor.get_cam_persons(c2_bbox,c2,c2_persons,T)
-    #c3_persons = feature_extractor.get_cam_persons(c3_bbox,c3,c3_persons,T)
-    #c4_persons = feature_extractor.get_cam_persons(c4_bbox,c4,c4_persons,T)
+    c1_persons = feature_extractor.get_cam_persons(c1_bbox,c1,c1_persons,T_bbox=100,T_sim = 0.8)
+    #c2_persons = feature_extractor.get_cam_persons(c2_bbox,c2,c2_persons,T_bbox=100,T_sim = 0.8)
+    #c3_persons = feature_extractor.get_cam_persons(c3_bbox,c3,c3_persons,T_bbox=100,T_sim = 0.8)
+    #c4_persons = feature_extractor.get_cam_persons(c4_bbox,c4,c4_persons,T_bbox=100,T_sim = 0.8)
     print(len(c1_persons))
     blue =   (255,0,0)
     red = (0,0,255)
@@ -67,6 +67,10 @@ for frame in range(num_frames):
     c2_w_bbox = draw_bbox_on_im(c2_bbox, c2, red)
     c3_w_bbox = draw_bbox_on_im(c3_bbox, c3, red)
     c4_w_bbox = draw_bbox_on_im(c4_bbox, c4, red)
+    c1_w_bbox = draw_text_on_im(c1_w_bbox, str(len(c1_persons)),(750,950))
+    # c2_w_bbox = draw_text_on_im(c2_w_bbox, str(len(c2_persons)),(50,50))
+    # c3_w_bbox = draw_text_on_im(c3_w_bbox, str(len(c3_persons)),(50,50))
+    # c4_w_bbox = draw_text_on_im(c4_w_bbox, str(len(c4_persons)),(50,50))
     merged_im = merge_4_im(c1_w_bbox,c2_w_bbox,c3_w_bbox,c4_w_bbox)
 
     cv2.imshow("test",merged_im)

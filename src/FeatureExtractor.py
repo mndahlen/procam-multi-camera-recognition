@@ -3,12 +3,14 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+
 device = torch.device("cpu")
 
 class FeatureExtractor(object):
-    def __init__(self):
-        self.resnet = torch.load("../models/resnet18_hallway_1192_augmented_3_20.tar")
+    def __init__(self, model_path, zero_pad = False):
+        self.zero_pad = zero_pad
+        self.resnet = torch.load(model_path)
         self.layer = self.resnet._modules.get('avgpool')
         self.resnet.eval()
         self.scaler = transforms.Scale((224, 224))
@@ -18,6 +20,8 @@ class FeatureExtractor(object):
 
     def get_feature_embedding(self,img):
         # 1. Create a PyTorch Variable with the transformed image
+        if self.zero_pad:
+            img = self.resize_with_padding(img, (224,224))
         t_img = Variable(self.normalize(self.to_tensor(self.scaler(img))).unsqueeze(0))
         # 2. Create a vector of zeros that will hold our feature vector
         #    The 'avgpool' layer has an output size of 512
@@ -37,104 +41,7 @@ class FeatureExtractor(object):
         # 7. Return the feature vector
         return my_embedding
 
-    def get_cam_persons(self,bbox,im,persons,T_bbox=10,T_sim = 0):
-        num_detected_persons = bbox.shape[0]
-        persons_empty = False
-
-        if T_sim < 0:
-            print("T_sim must be non-negative!")
-            exit(1)
-
-        if not persons:
-            persons_empty = True
-            persons = {}    
-
-        for i in range(0,num_detected_persons):
-            b = bbox[i]
-            x1 = int(b[0])
-            y1 = int(b[1])
-            x2 = int(b[2])
-            y2 = int(b[3])
-            person_im = im[y1:y2,x1:x2] 
-            feature = self.get_feature_embedding(Image.fromarray(person_im)).flatten().numpy()
-            
-            if persons_empty:
-                persons[i] = {"feature":0, "bbox":0, "history":1}
-                persons[i]["feature"] = feature
-                persons[i]["bbox"] = b
-            else:
-                max_id = 0
-                max_sim = -1
-                for person_id in persons:
-                    prev_frame_feature = persons[person_id]["feature"]
-                    if True:#self.bbox_are_close(b, persons[person_id]["bbox"],T_bbox):
-                        sim = self.get_cosine_sim(feature,prev_frame_feature)
-                        if sim >= max_sim:
-                            max_sim = sim
-                            max_id = person_id
-                if max_sim >= T_sim:
-                    history = persons[max_id]["history"]
-                    # Calculate mean for all time
-                    combined_features = (history*prev_frame_feature + feature)/(history + 1)
-                    persons[max_id]["feature"] = combined_features
-                    persons[max_id]["bbox"] = b
-                    persons[max_id]["history"] = history + 1
-                else:
-                    new_id = max(persons.keys()) + i + 1
-                    persons[new_id] = {"feature":0, "bbox":0, "history":1}
-                    persons[new_id]["feature"] = feature
-                    persons[new_id]["bbox"] = b
-        return persons
-
-    def get_cam_persons_2(self,bbox,im,persons,T_bbox=10,T_sim = 0):
-        num_detected_persons = bbox.shape[0]
-        persons_empty = False
-
-        if T_sim < 0:
-            print("T_sim must be non-negative!")
-            exit(1)
-
-        if not persons:
-            persons_empty = True
-            persons = {}    
-
-        for i in range(0,num_detected_persons):
-            b = bbox[i]
-            x1 = int(b[0])
-            y1 = int(b[1])
-            x2 = int(b[2])
-            y2 = int(b[3])
-            person_im = im[y1:y2,x1:x2] 
-            feature = self.get_feature_embedding(Image.fromarray(person_im)).flatten().numpy()
-            
-            if persons_empty:
-                persons[i] = {"feature":0, "bbox":0, "history":1}
-                persons[i]["feature"] = feature
-                persons[i]["bbox"] = b
-            else:
-                max_id = 0
-                max_sim = -1
-                match_found = False
-                for person_id in persons:
-                    prev_frame_feature = persons[person_id]["feature"]
-                    if not match_found:
-                        if self.bbox_are_close(b, persons[person_id]["bbox"],T_bbox):
-                            history = persons[max_id]["history"]
-                            # Calculate mean for all time
-                            sim = self.get_cosine_sim(feature,prev_frame_feature)
-                            combined_features = (history*prev_frame_feature + feature)/(history + 1)
-                            persons[max_id]["feature"] = combined_features
-                            persons[max_id]["bbox"] = b
-                            persons[max_id]["history"] = history + 1
-                            match_found = True
-                if not match_found:
-                    new_id = max(persons.keys()) + i + 1
-                    persons[new_id] = {"feature":0, "bbox":0, "history":1}
-                    persons[new_id]["feature"] = feature
-                    persons[new_id]["bbox"] = b
-        return persons
-
-    def get_cam_persons_3(self,bbox,im,persons,T_bbox=5,T_sim = 0):
+    def get_cam_persons(self,bbox,im,persons,T_bbox=5,T_sim = 0):
         num_detected_persons = bbox.shape[0]
         persons_empty = False
 
@@ -211,39 +118,6 @@ class FeatureExtractor(object):
                 if not match_found:
                     new_id = max(persons.keys()) + i + 1
                     persons[new_id] = {"feature":detected_person_feature, "bbox":b, "history":1}
-
-        return persons
-
-    def get_cam_persons_4(self,bbox,im,persons,T_bbox=5,T_sim = 0):
-        num_detected_persons = bbox.shape[0]
-        persons_empty = False
-
-        if T_sim < 0:
-            print("T_sim must be non-negative!")
-            exit(1)
-
-        if not persons:
-            persons_empty = True
-            persons = {}    
-
-        processed_persons = []
-        distances = {}
-        for i in range(0,num_detected_persons):
-            processed_persons.append(i)
-            b = bbox[i]
-            
-            if persons_empty:
-                persons[i] = {"feature":None, "bbox":b, "history":1}
-            else:
-                max_id = 0
-                for person_id in persons:
-                    prev_frame_feature = persons[person_id]["feature"]
-                    if self.bbox_centers_are_close(b, persons[person_id]["bbox"],T_bbox):
-                        print(person_id)
-                        history = persons[max_id]["history"]
-                        persons[max_id]["bbox"] = b
-                        persons[max_id]["history"] = history + 1
-
 
         return persons
 
@@ -325,3 +199,12 @@ class FeatureExtractor(object):
         norm_product = max(np.linalg.norm(v1)*np.linalg.norm(v2),lower_limit)
         cosinesim = np.dot(v1,v2)/norm_product
         return  cosinesim
+
+    def resize_with_padding(self, img, expected_size):
+        img.thumbnail((expected_size[0], expected_size[1]))
+        delta_width = expected_size[0] - img.size[0]
+        delta_height = expected_size[1] - img.size[1]
+        pad_width = delta_width // 2
+        pad_height = delta_height // 2
+        padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
+        return ImageOps.expand(img, padding)
