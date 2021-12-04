@@ -23,13 +23,11 @@ def update_cam_persons(bbox,im,persons,T):
         person_im = im[y1:y2,x1:x2] 
     pass
 
-
-
 # models
 yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-feature_extractor = FeatureExtractor("models/resnet18_hallway_1192_augmented_zero_padded_3_20.tar",zero_pad=True)
+feature_extractor = FeatureExtractor("models/resnet18_hallway_1192_cropped_3_20.tar",zero_pad=True)
 
-cam_instance = 0
+cam_instance = 2
 num_frames = 1000
 T = 0.9
 FEATURE_START_BUFFER = -1
@@ -45,30 +43,36 @@ for frame in range(num_frames):
     c3 = cv2.imread(os.path.join(IMGDIR,"c3/00000{}/00{}{}.jpg".format(cam_instance,cam_instance,frame_idx)))
     c4 = cv2.imread(os.path.join(IMGDIR,"c4/00000{}/00{}{}.jpg".format(cam_instance,cam_instance,frame_idx)))
 
+    # Execute yolo on camera images
     c1_yolo_results = yolo(c1)
     c2_yolo_results = yolo(c2)
     c3_yolo_results = yolo(c3)
     c4_yolo_results = yolo(c4)
 
+    # Extract bbox from yolo result
     c1_bbox = get_bbox(c1_yolo_results)
     c2_bbox = get_bbox(c2_yolo_results)
     c3_bbox = get_bbox(c3_yolo_results)
     c4_bbox = get_bbox(c4_yolo_results)
 
+    # Update bbox and features for all persons, create new or match on feature if needed.
     c1_persons = feature_extractor.get_cam_persons(c1_bbox,c1,c1_persons,T_bbox=100,T_sim = 0.8)
     c2_persons = feature_extractor.get_cam_persons(c2_bbox,c2,c2_persons,T_bbox=100,T_sim = 0.8)
     c3_persons = feature_extractor.get_cam_persons(c3_bbox,c3,c3_persons,T_bbox=100,T_sim = 0.8)
     c4_persons = feature_extractor.get_cam_persons(c4_bbox,c4,c4_persons,T_bbox=100,T_sim = 0.8)
 
+
+    # Get most similar persons to selected person from camera 1
+    if frame > FEATURE_START_BUFFER:
+        person_camera_idxs = feature_extractor.get_closest_persons(0, c1_persons, c2_persons, c3_persons, c4_persons)
+    else:
+        person_camera_idxs = [0,0,0,0]
+    
+    # Define colors
     blue =   (255,0,0)
     red = (0,0,255)
     green =  (0,255,0)
 
-    if frame > FEATURE_START_BUFFER:
-        person_camera_idxs = feature_extractor.get_closest_persons(3, c1_persons, c2_persons, c3_persons, c4_persons)
-    else:
-        person_camera_idxs = [0,0,0,0]
-    
     # Draw bounding boxes
     c1_w_bbox = draw_bbox_on_im(c1_bbox, c1, red, selected=True, selected_bbox=c1_persons[person_camera_idxs[0]]["bbox"])
     c2_w_bbox = draw_bbox_on_im(c2_bbox, c2, red, selected=True, selected_bbox=c2_persons[person_camera_idxs[1]]["bbox"])

@@ -28,11 +28,11 @@ transform = transforms.Compose((
     transforms.ToTensor()))
 
 dataset = PersonDataset(
-    "data\hallway_1192_augmented_zero_padded\data_labels_augmented_zero_padded.csv", 
-    "data\hallway_1192_augmented_zero_padded\persons", 
+    "data\hallway_1192_cropped\data_labels_cropped.csv", 
+    "data\hallway_1192_cropped\persons", 
     transform=transform)
 print(len(dataset))
-train_set, test_set = torch.utils.data.random_split(dataset, [3000,576],
+train_set, test_set = torch.utils.data.random_split(dataset, [8000,344],
                       generator=torch.Generator().manual_seed(42))
 train_loader = DataLoader(dataset=train_set, batch_size=batch_size)
 test_loader = DataLoader(dataset=test_set, batch_size=batch_size, shuffle=True)
@@ -67,7 +67,7 @@ if 1 :
             # Gradient decent
             optimizer.step()
 
-torch.save(resnet, "models/resnet18_hallway_1192_augmented_zero_padded_{}_{}.tar".format(num_epochs,batch_size))
+torch.save(resnet, "models/resnet18_hallway_1192_cropped_{}_{}.tar".format(num_epochs,batch_size))
 
 
 def check_accuracy(loader, model):
