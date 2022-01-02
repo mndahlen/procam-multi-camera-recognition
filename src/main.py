@@ -1,37 +1,28 @@
 import torch
 import cv2
 import os
-import time
 from helpers import *
 from FeatureExtractor import FeatureExtractor
+
+"""
+Main script for demonstrating project.
+"""
+
+# Pytorch models
 device = torch.device("cpu")
-
-IMGDIR = "data/hallway"
-
-def update_cam_persons(bbox,im,persons,T):
-    if not persons:
-        persons = {}
-    
-    num_detected_persons = bbox.shape[0]
-   
-    for i in range(0,num_detected_persons):
-        b = bbox[i]
-        x1 = int(b[0])
-        y1 = int(b[1])
-        x2 = int(b[2])
-        y2 = int(b[3])
-        person_im = im[y1:y2,x1:x2] 
-    pass
-
-# models
 yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 feature_extractor = FeatureExtractor("models/resnet18_hallway_1192_cropped_3_20.tar",zero_pad=True)
 
-cam_instance = 2
-num_frames = 1000
+# Parameters
+IMGDIR = "data/hallway"
+cam_instance = 4
+num_frames = 60
+main_selected_person_idx = 0 # Test with different values and see what happens! Warning, for some cases the idx can be too high and the program will crash.
 T = 0.9
 FEATURE_START_BUFFER = -1
 
+
+# Run script
 c1_persons = None
 c2_persons = None
 c3_persons = None
@@ -61,10 +52,9 @@ for frame in range(num_frames):
     c3_persons = feature_extractor.get_cam_persons(c3_bbox,c3,c3_persons,T_bbox=100,T_sim = 0.8)
     c4_persons = feature_extractor.get_cam_persons(c4_bbox,c4,c4_persons,T_bbox=100,T_sim = 0.8)
 
-
     # Get most similar persons to selected person from camera 1
     if frame > FEATURE_START_BUFFER:
-        person_camera_idxs = feature_extractor.get_closest_persons(0, c1_persons, c2_persons, c3_persons, c4_persons)
+        person_camera_idxs = feature_extractor.get_closest_persons(main_selected_person_idx, c1_persons, c2_persons, c3_persons, c4_persons)
     else:
         person_camera_idxs = [0,0,0,0]
     
@@ -90,5 +80,6 @@ for frame in range(num_frames):
 
     cv2.imshow("test",merged_im)
     cv2.waitKey(1) 
-    #closing all open windows 
+
+# If still open, close all opened windows
 cv2.destroyAllWindows() 

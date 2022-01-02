@@ -1,6 +1,8 @@
 import pandas as pd
 from torch.utils import data
 
+"""Generate CSV for use as labels in dataset. You have to set number of instances per class yourself in the range() calls below."""
+
 datalabels = pd.DataFrame(columns=["imname","label"])
 
 person = 1

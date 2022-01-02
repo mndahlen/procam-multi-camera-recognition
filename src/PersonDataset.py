@@ -7,13 +7,15 @@ import cv2
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
+"""
+Dataloader for dataset.
+"""
 
 class PersonDataset(Dataset):
     def __init__(self, csv, root, transform=None):
         self.annotations = pd.read_csv(csv)
         self.root = root
         self.transform = transform
-
         self.resize = transforms.Resize((224, 224))
         self.normalize = transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                               std=(0.229, 0.224, 0.225))
@@ -38,7 +40,6 @@ class PersonDataset(Dataset):
 if __name__ == "__main__":
     dataset = PersonDataset(csv="data\hallway_persons_0\data_labels.csv",
                                         root="data\hallway_persons_0\persons")
-
     fig = plt.figure()
 
     for i in range(len(dataset)):

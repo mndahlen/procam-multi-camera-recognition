@@ -1,9 +1,7 @@
 import torch
-import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-import cv2
 from PIL import Image
 import numpy as np
 import os
@@ -11,15 +9,18 @@ import seaborn as sbn
 import matplotlib.pyplot as plt
 from helpers import *
 
+"""
+Script for testing use of resnet for extracting visual person similarities. Also plots the cosine distance results.
+"""
+
 # Constants
-HALLWAYDIR = "data/hallway"
 PERSONSDIR = "data/feature_testing"
 ZERO_PAD = True
 
 # Model
 yolo = models.resnet18(pretrained=True)
 
-# Persons
+# Persons for checking similarity
 person_1_1 = Image.open(os.path.join(PERSONSDIR,"person_1_1.png"))
 person_1_2 = Image.open(os.path.join(PERSONSDIR,"person_1_2.png"))
 person_2_1 = Image.open(os.path.join(PERSONSDIR,"person_2_1.png"))
@@ -63,13 +64,11 @@ if ZERO_PAD:
     person_10_1 = resize_with_padding(person_10_1, (224,224))
     person_10_2 = resize_with_padding(person_10_2, (224,224))
 
-# Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
 # Load the pretrained model
 model = models.resnet18(pretrained=True)
-model = torch.load("models/resnet18_hallway_1192_augmented_zero_padded_3_20.tar")
+model = torch.load("models/resnet18_hallway_1192_cropped_3_20.tar")
 
 # Use the model object to select the desired layer
-#print(model._modules)
 layer = model._modules.get('avgpool')
 # Set model to evaluation mode
 model.eval()
@@ -78,17 +77,15 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 to_tensor = transforms.ToTensor()
 
-def get_vector(img):
+def get_embedding(img):
+    # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
     # 1. Create a PyTorch Variable with the transformed image
     t_img = Variable(normalize(to_tensor(scaler(img))).unsqueeze(0))
     # 2. Create a vector of zeros that will hold our feature vector
     #    The 'avgpool' layer has an output size of 512
     my_embedding = torch.zeros([1,512,1,1])
-    test = None
     # 3. Define a function that will copy the output of a layer
     def copy_data(m, i, o):
-        #print(o.data.shape)
-        #test = o.data
         my_embedding.copy_(o.data)
     # 4. Attach that function to our selected layer
     h = layer.register_forward_hook(copy_data)
@@ -106,26 +103,26 @@ def get_cosine_sim(v1,v2):
     return  cosinesim
 
 # Get embeddings for all person images
-embedding_1_1 = get_vector(person_1_1).flatten().numpy()
-embedding_1_2 = get_vector(person_1_2).flatten().numpy()
-embedding_2_1 = get_vector(person_2_1).flatten().numpy()
-embedding_2_2 = get_vector(person_2_2).flatten().numpy()
-embedding_3_1 = get_vector(person_3_1).flatten().numpy()
-embedding_3_2 = get_vector(person_3_2).flatten().numpy()
-embedding_4_1 = get_vector(person_4_1).flatten().numpy()
-embedding_4_2 = get_vector(person_4_2).flatten().numpy()
-embedding_5_1 = get_vector(person_5_1).flatten().numpy()
-embedding_5_2 = get_vector(person_5_2).flatten().numpy()
-embedding_6_1 = get_vector(person_6_1).flatten().numpy()
-embedding_6_2 = get_vector(person_6_2).flatten().numpy()
-embedding_7_1 = get_vector(person_7_1).flatten().numpy()
-embedding_7_2 = get_vector(person_7_2).flatten().numpy()
-embedding_8_1 = get_vector(person_8_1).flatten().numpy()
-embedding_8_2 = get_vector(person_8_2).flatten().numpy()
-embedding_9_1 = get_vector(person_9_1).flatten().numpy()
-embedding_9_2 = get_vector(person_9_2).flatten().numpy()
-embedding_10_1 = get_vector(person_10_1).flatten().numpy()
-embedding_10_2 = get_vector(person_10_2).flatten().numpy()
+embedding_1_1 = get_embedding(person_1_1).flatten().numpy()
+embedding_1_2 = get_embedding(person_1_2).flatten().numpy()
+embedding_2_1 = get_embedding(person_2_1).flatten().numpy()
+embedding_2_2 = get_embedding(person_2_2).flatten().numpy()
+embedding_3_1 = get_embedding(person_3_1).flatten().numpy()
+embedding_3_2 = get_embedding(person_3_2).flatten().numpy()
+embedding_4_1 = get_embedding(person_4_1).flatten().numpy()
+embedding_4_2 = get_embedding(person_4_2).flatten().numpy()
+embedding_5_1 = get_embedding(person_5_1).flatten().numpy()
+embedding_5_2 = get_embedding(person_5_2).flatten().numpy()
+embedding_6_1 = get_embedding(person_6_1).flatten().numpy()
+embedding_6_2 = get_embedding(person_6_2).flatten().numpy()
+embedding_7_1 = get_embedding(person_7_1).flatten().numpy()
+embedding_7_2 = get_embedding(person_7_2).flatten().numpy()
+embedding_8_1 = get_embedding(person_8_1).flatten().numpy()
+embedding_8_2 = get_embedding(person_8_2).flatten().numpy()
+embedding_9_1 = get_embedding(person_9_1).flatten().numpy()
+embedding_9_2 = get_embedding(person_9_2).flatten().numpy()
+embedding_10_1 = get_embedding(person_10_1).flatten().numpy()
+embedding_10_2 = get_embedding(person_10_2).flatten().numpy()
 
 embeddings = [embedding_1_1,embedding_1_2,embedding_2_1,embedding_2_2,embedding_3_1,embedding_3_2,
               embedding_4_1,embedding_4_2,embedding_5_1,embedding_5_2,embedding_6_1,embedding_6_2,
@@ -150,5 +147,5 @@ mask[mask > 0] = 2
 mask[mask == 0] = 1
 mask[mask == 2] = 0
 
-ax = sbn.heatmap(sim_matrix,mask = mask, annot=True)
+ax = sbn.heatmap(sim_matrix,mask = mask, annot=True, vmin=0, vmax=1)
 plt.show()

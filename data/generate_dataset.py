@@ -3,6 +3,12 @@ import cv2
 import os
 IMGDIR = "data/hallway"
 DATADIR = "data/hallway_persons_0"
+
+"""
+Iterate through hallway and detect persons using yolo. These detected persons are cropped and become a dataset themselves. 
+Zero padding to standarize size is performed in augment_data.py.
+"""
+
 # Model
 yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 

@@ -1,9 +1,12 @@
 import torch
-import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 import numpy as np
 from PIL import Image, ImageOps
+
+"""
+Wrapper of Resnet(Or any model for extracting features) for use in main script.
+"""
 
 device = torch.device("cpu")
 
@@ -19,6 +22,7 @@ class FeatureExtractor(object):
         self.to_tensor = transforms.ToTensor()
 
     def get_feature_embedding(self,img):
+        # Copied from https://becominghuman.ai/extract-a-feature-vector-for-any-image-with-pytorch-9717561d1d4c
         # 1. Create a PyTorch Variable with the transformed image
         if self.zero_pad:
             img = self.resize_with_padding(img, (224,224))
@@ -26,11 +30,8 @@ class FeatureExtractor(object):
         # 2. Create a vector of zeros that will hold our feature vector
         #    The 'avgpool' layer has an output size of 512
         my_embedding = torch.zeros([1,512,1,1])
-        test = None
         # 3. Define a function that will copy the output of a layer
         def copy_data(m, i, o):
-            #print(o.data.shape)
-            #test = o.data
             my_embedding.copy_(o.data)
         # 4. Attach that function to our selected layer
         h = self.layer.register_forward_hook(copy_data)
