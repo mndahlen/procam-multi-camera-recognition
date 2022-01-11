@@ -1,8 +1,11 @@
 # Background
-In surveillance settings, there could be cameras positioned at different locations with different angles of view. I have attempted to build a system that detects people in different video streams from different views and identifies them as the same person independent of camera position and angle. Several suitable datasets are publically available from the TEV apartment at the Bruno Kessler Institute. Existing object detection models such as YOLO and Resnet have been tried and used for the detection and identification of persons across multiple cameras.
+In surveillance settings, there could be cameras positioned at different locations with different angles of view. I will attempt to build a system that detects people in different video streams from different views and identifies them as the same person independent of camera position and angle. Several suitable datasets are publically available from the TEV apartment at the Bruno Kessler Institute. Existing object detection models such as YOLO can be tried and used for the detection and identification of persons across multiple cameras.
 
+You can find more information about the Hallway dataset here: https://tev.fbk.eu/resources/hallway-and-lab
 
 # Results
+![Alt Text](docs/presentation/demo_videos/gif_final_model_instance_4.gif)
+
 
 # Usage
 Run main.py in src/
